@@ -26,7 +26,7 @@ def display_message(message):
     st.markdown(message)
 
 def main():
-    st.title("Chat with Hugging Face Models")
+    st.title("Chat with ChatGpt-o1mini/o1")
 
     # Dropdown menu for selecting the model
     model_choice = st.selectbox("Choose the model:", options=["o1", "o1mini"])
