@@ -20,38 +20,13 @@ def query_huggingface_api(model_choice, input_text):
 
 def display_message(message):
     # Split the message by newline characters to handle new lines
-    lines = message.split('\n')
 
-    # Process the message and separate text and code
-    formatted_message = ""
-    code_buffer = []  # To collect lines for the current code block
-    code_block = False  # Flag to indicate if we are in a code block
-
-    for line in lines:
-        if line.startswith("```"):  # Detect start or end of code block
-            if code_block:
-                # We are ending a code block
-                formatted_message += f"```python\n{''.join(code_buffer)}\n```\n"  # Add the buffered code block to the formatted message
-                code_buffer = []  # Reset buffer for the next code block
-                code_block = False
-            else:
-                # We are starting a code block
-                code_block = True
-        elif code_block:
-            code_buffer.append(line.strip())  # Collect lines for the code block, stripping extra spaces
-        else:
-            if line.strip():  # Only show non-empty lines
-                formatted_message += line + "\n"  # Add normal text to the formatted message
-
-    # If there was a code block open at the end, display it
-    if code_block and code_buffer:
-        formatted_message += f"```python\n{''.join(code_buffer)}\n```\n"  # Display the final code block without extra new lines
 
     # Use st.markdown to render the formatted message
-    st.markdown(formatted_message)
+    st.markdown(message)
 
 def main():
-    st.title("Chat with Chatgpt o1/o1mini")
+    st.title("Chat with Hugging Face Models")
 
     # Dropdown menu for selecting the model
     model_choice = st.selectbox("Choose the model:", options=["o1", "o1mini"])
