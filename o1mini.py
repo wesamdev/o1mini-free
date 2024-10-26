@@ -30,11 +30,6 @@ def query_g4f(model_choice, input_text):
     result = response.choices[0].message.content
     return result
 
-def display_chat_message(message, is_user):
-    if is_user:
-        st.markdown(message)
-    else:
-        st.markdown(message)
 
 def main():
     st.title("Chat with ChatGpt-o1mini/o1 🤖")
@@ -54,8 +49,7 @@ def main():
     if previous_conversations:
         index = int(previous_conversations.split(" ")[-1]) - 1
         user_input, response = st.session_state.conversation_history[index]
-        display_chat_message(user_input, is_user=True)
-        display_chat_message(response, is_user=False)
+        st.markdown(response)
     else:
         user_input = ""
 
@@ -76,8 +70,7 @@ def main():
         st.session_state.conversation_history.append((user_input, response))
 
         # Display the user's message and the model's response
-        display_chat_message(user_input, is_user=True)
-        display_chat_message(response, is_user=False)
+        st.markdown(response)
 
 if __name__ == "__main__":
     main()
