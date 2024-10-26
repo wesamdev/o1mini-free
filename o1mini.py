@@ -32,7 +32,7 @@ def query_g4f(model_choice, input_text):
 
 def display_chat_message(message, is_user):
     if is_user:
-        st.markdown(f"<div style='text-align: right;'><p style='background-color: #D1E7DD; border-radius: 10px; padding: 10px; display: inline-block; max-width: 70%;'>{message}</p></div>", unsafe_allow_html=True)
+        st.markdown(message)
     else:
         st.markdown(message)
 
