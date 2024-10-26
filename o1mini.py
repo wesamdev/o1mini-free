@@ -1,5 +1,6 @@
 import streamlit as st
-from gradio_client import Client
+from gradio_client import Client as GradioClient
+from g4f.client import Client as G4FClient
 
 # Define the Hugging Face Space's Gradio API URLs
 API_URLS = {
@@ -7,39 +8,76 @@ API_URLS = {
     "o1mini": "https://yuntian-deng-o1mini.hf.space/"
 }
 
+g4f_name = {
+    "gpt4o": "gpt-4o",
+    "gpt3.5 turbo": "gpt-3.5-turbo",
+    "gpt-4": "gpt-4"
+}
+
+g4f_client = G4FClient()
+
 # Function to query the Hugging Face Space API
 def query_huggingface_api(model_choice, input_text):
-    # Initialize the Gradio client based on the user's choice
-    client = Client(API_URLS[model_choice])
-
-    # Send the input to the model via the Gradio client
+    client = GradioClient(API_URLS[model_choice])
     result = client.predict(input_text, api_name="/predict")
-
-    # Extract and return the relevant response (the generated text)
     return result[0][0][1]  # Assuming the generated text is in this position
 
-def display_message(message):
-    # Split the message by newline characters to handle new lines
+def query_g4f(model_choice, input_text):
+    response = g4f_client.chat.completions.create(
+        model=g4f_name[model_choice],
+        messages=[{"role": "user", "content": str(input_text)}],
+    )
+    result = response.choices[0].message.content
+    return result
 
-
-    # Use st.markdown to render the formatted message
-    st.markdown(message)
+def display_chat_message(message, is_user):
+    if is_user:
+        st.markdown(f"<div style='text-align: right;'><p style='background-color: #D1E7DD; border-radius: 10px; padding: 10px; display: inline-block; max-width: 70%;'>{message}</p></div>", unsafe_allow_html=True)
+    else:
+        st.markdown(f"<div style='text-align: left;'><p style='background-color: #F8D7DA; border-radius: 10px; padding: 10px; display: inline-block; max-width: 70%;'>{message}</p></div>", unsafe_allow_html=True)
 
 def main():
-    st.title("Chat with ChatGpt-o1mini/o1")
+    st.title("Chat with ChatGpt-o1mini/o1 🤖")
+    
+    # Sidebar for conversation selection
+    st.sidebar.title("Previous Conversations")
+    
+    # List to hold conversation histories
+    if 'conversation_history' not in st.session_state:
+        st.session_state.conversation_history = []
+
+    # Allow users to select from previous conversations
+    previous_conversations = st.sidebar.selectbox("Select a conversation:", 
+                                                    options=[""] + [f"Conversation {i+1}" for i in range(len(st.session_state.conversation_history))])
+
+    # Load the selected conversation if not empty
+    if previous_conversations:
+        index = int(previous_conversations.split(" ")[-1]) - 1
+        user_input, response = st.session_state.conversation_history[index]
+        display_chat_message(user_input, is_user=True)
+        display_chat_message(response, is_user=False)
+    else:
+        user_input = ""
+
+    # User input box for new conversation
+    user_input = st.text_area("You:", user_input, height=150, placeholder="Type your message here...")
 
     # Dropdown menu for selecting the model
-    model_choice = st.selectbox("Choose the model:", options=["o1", "o1mini"])
-
-    # User input box, allowing multi-line input
-    user_input = st.text_area("You:", "", height=150)
+    model_choice = st.selectbox("Choose the model:", options=["o1", "o1mini", "gpt4o", "gpt3.5 turbo", "gpt-4"], index=1)
 
     if st.button("Think!") and user_input:
         # Query the Hugging Face Space API based on the selected model
-        response = query_huggingface_api(model_choice, user_input)
+        if model_choice in ["o1", "o1mini"]:
+            response = query_huggingface_api(model_choice, user_input)
+        else:
+            response = query_g4f(model_choice, user_input)
 
-        # Display the model's response
-        display_message(response)
+        # Add the user's input and the model's response to the conversation history
+        st.session_state.conversation_history.append((user_input, response))
+
+        # Display the user's message and the model's response
+        display_chat_message(user_input, is_user=True)
+        display_chat_message(response, is_user=False)
 
 if __name__ == "__main__":
     main()

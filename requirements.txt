@@ -1,3 +1,4 @@
 pystan
 gradio_client
 streamlit
+g4f
